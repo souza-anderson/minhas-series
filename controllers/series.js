@@ -4,50 +4,58 @@ const labels = [
     { id: 'watched', name: 'Assistido' }
 ]
 
-const index = ({ Serie }, req, res) => {
-    Serie.find({}, (err, docs) => {
-        res.render('series/index', { series: docs, labels })
-    })
+const index = async ({ Serie }, req, res) => {
+    const series = await Serie.find({})
+    res.render('series/index', { series, labels })
+
 }
 
-const novaProcess = ({ Serie }, req, res) => {
+const novaProcess = async ({ Serie }, req, res) => {
     const serie = new Serie(req.body)
-    serie.save(() => {
+    try {
+        await serie.save()
         res.redirect('/series')
-    })
+    } catch(e) {
+        res.render('series/nova', { errors: Object.keys(e.errors) })
+    }    
 }
 
 const novaForm = (req, res) => {
-    res.render('series/nova')
+    res.render('series/nova', { errors: [] })
 }
 
-const editarProcess = ({ Serie }, req, res) => {
-    Serie.findOne({
-        _id: req.params.id
-    }, (err, serie) => {
-        serie.name = req.body.name
-        serie.status = req.body.status
-        serie.save()
+const editarProcess = async ({ Serie }, req, res) => {
+    const serie = await Serie.findOne({ _id: req.params.id })    
+    serie.name = req.body.name
+    serie.status = req.body.status
+    try {
+        await serie.save()
         res.redirect('/series')
-    })
+    } catch(e) {
+        res.render('series/editar', { serie, labels, errors: Object.keys(e.errors) })
+    }
 }
 
-const editarForm = ({ Serie }, req, res) => {
-    Serie.findOne({
-        _id: req.params.id
-    }, (err, serie) => {
-        res.render('series/editar', { serie, labels })
-    })
+const editarForm = async ({ Serie }, req, res) => {
+    const serie = await Serie.findOne({ _id: req.params.id })
+    res.render('series/editar', { serie, labels, errors: [] })
 }
 
-const excluir = ({ Serie }, req, res) => {
-    Serie.deleteOne({
-        _id: req.params.id
-    }, (err) => {
-        res.redirect('/series')
-    })
+const excluir = async ({ Serie }, req, res) => {
+    await Serie.deleteOne({ _id: req.params.id })
+    res.redirect('/series')  
+}
+
+const info = async ({ Serie }, req, res) => {
+    const serie = await Serie.findOne({ _id: req.params.id })
+    res.render('series/info', { serie })
+}
+
+const addComentario = async ({ Serie }, req, res) => {
+    await Serie.updateOne({ _id: req.params.id }, { $push: { comments: req.body.comment } })
+    res.redirect('/series/info/' + req.params.id)
 }
 
 module.exports = {
-    index, novaProcess, novaForm, excluir, editarForm, editarProcess
+    index, novaProcess, novaForm, excluir, editarForm, editarProcess, info, addComentario
 }
