@@ -18,7 +18,7 @@ app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
 // assets
-app.use(express.static('public'))
+app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', pages)
 app.use('/series', series)
