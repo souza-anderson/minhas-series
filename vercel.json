@@ -5,7 +5,7 @@
             "src": "index.js",
             "use": "@vercel/node"
         },{
-            "src": "*.ejs",
+            "src": "/public",
             "use": "@vercel/static"
         }
     ],
